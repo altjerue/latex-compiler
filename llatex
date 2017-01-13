@@ -4,44 +4,55 @@
 # Usage info
 show_help() {
 cat << EOF
-    Usage: ${0##*/} [-bg] [-B BibTeX] [FILE]...
+    Usage: ${0##*/} [-bgpr] [-B BibTeX] [FILE.tex]...
 
-    Do stuff with FILE and write the result to standard output. With no
-    FILE or when FILE is -, read standard input.
+    Run LaTeX for file FILE.tex and generates FILE.pdf
 
-    -b          display this help and exit
-    -B OUTFILE  write the result to OUTFILE instead of standard output.
-    -g          verbose mode. Can be used multiple times for increased
-                verbosity.
+    -b          compiles File.bib to generate BibTeX file
+    -B bibfile  compiles bibfile.bib to generate BibTeX file
+    -g          run makeglossaries
+    -r          delete .aux, .toc, .dvi, ...
+    -p          compile with pdfLaTeX
 EOF
  }
 
 latexfile="${@: -1:1}"
-echo "${(s/./)latexfile}"
-l="${latexfile%.*}"
-echo $latexfile
-echo $l
-OPTIND=1
+l=${latexfile%.*}
+echo "$latexfile"
+echo "$l"
+latexcomp=latex
+dvipdfconv=true
 
-######## LaTeX first run
-latex $l
+OPTIND=1
 
 while getopts ":bB:g" opt; do
     case $opt in
         b)
-            echo
-            echo '*****  Running BibTeX  *****'
-            bibtex $l
+            bibcomp=true
+            bibfile=$l
             ;;
         B)
-            echo
-            echo '*****  Running BibTeX  *****'
-            bibtex ${OPTARG%.*}
+            bibcomp=true
+            bibfile=${OPTARG%.*}
             ;;
         g)
-            echo
-            echo '\n***** Running makeglossaries *****\n'
-            makeglossaries phd
+            makegloss=true
+            ;;
+        r)
+            rm -f *.aux
+            rm -f *.toc
+            rm -f *.bbl
+            rm -f *.blg
+            rm -f *.dvi
+            rm -f *.log
+            rm -f *.ps
+            rm -f *.out
+            delated=1
+            echo '\nRubish deleted...\n'
+            ;;
+        p)
+            latexcomp=pdflatex
+            dvipdfconv=false
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -57,27 +68,54 @@ while getopts ":bB:g" opt; do
             ;;
     esac
 done
+
+echo "Compiling $latexfile with $latexcomp"
+#echo $latexfile
+echo
+
+# LaTeX first run
+$latexcomp $l
+
+######## Bibliography
+if bibcomp; then
+    echo
+    echo '*****  Running BibTeX  *****'
+    bibtex $bibfile
+fi
+
+if $makegloss; then
+    echo
+    echo '\n***** Running makeglossaries *****\n'
+    makeglossaries $l
+fi
+
 echo
 echo '*****  Running LaTeX again  *****'
-latex $l
-echo '*****  Running LaTeX again  *****'
-latex $l
+$latexcomp $l
+if [ "$delated" -eq 1 ]; then
+    echo '*****  Running LaTeX again  *****'
+    $latexcomp $l
+fi
 
-# Convert to PostScript
-echo
-echo '*****  Converting DVI to PS  *****'
-dvips -Ppdf -z -G0 -j0 $l.dvi -o
+#### Converting DVI to PDF
+if $dvipdfconv; then
 
-# Convert to PDF
-echo
-echo '*****  Converting PS to PDF  *****'
-ps2pdf -sPAPERSIZE=a4 $l.ps
+    # Convert to PostScript
+    echo
+    echo '*****  Converting DVI to PS  *****'
+    dvips -Ppdf -z -G0 -j0 $l.dvi -o
+
+    # Convert to PDF
+    echo
+    echo '*****  Converting PS to PDF  *****'
+    ps2pdf -sPAPERSIZE=a4 $l.ps
+fi
 
 # Deleting log,aux,dvi,out,snm,nav,toc
 # rm *.log
 # rm *.aux
 # rm *.dvi
-# rm *.out
+#
 # rm *.snm
 # rm *.nav
 # rm *.toc
