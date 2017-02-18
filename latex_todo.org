@@ -1,0 +1,7 @@
+#+TITLE: TODO file
+
+* [[elisp:(org-projectile:open-project%20"latex-compiler")][latex-compiler]] [0/0]
+  :PROPERTIES:
+  :CATEGORY: latex-compiler
+  :END:
+** TODO include option --syntex=1

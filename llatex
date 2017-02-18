@@ -4,28 +4,36 @@
 # Usage info
 show_help() {
 cat << EOF
-    Usage: ${0##*/} [-bgpr] [-B BibTeX] [FILE.tex]...
+Usage: ${0##*/} [-bgprh] [-B BibTeX] [FILE.tex]
 
-    Run LaTeX for file FILE.tex and generates FILE.pdf
+Run LaTeX for file FILE.tex and generates FILE.pdf
 
-    -b          compiles File.bib to generate BibTeX file
-    -B bibfile  compiles bibfile.bib to generate BibTeX file
-    -g          run makeglossaries
-    -r          delete .aux, .toc, .dvi, ...
-    -p          compile with pdfLaTeX
+  -b            Compiles File.bib to generate BibTeX file
+  -B <bibfile>  Compiles bibfile.bib to generate BibTeX file
+  -g            Run makeglossaries
+  -r            Delete .aux, .toc, .dvi, ...
+  -h            Show this message
+  -p            Compile with pdfLaTeX
+  -s            Use synctex option
 EOF
  }
 
+if [ $# == 0 ]; then
+    show_help >&2
+    exit 1
+fi
+
 latexfile="${@: -1:1}"
 l=${latexfile%.*}
-echo "$latexfile"
-echo "$l"
 latexcomp=latex
 dvipdfconv=true
+deltrash=false
+makegloss=false
+synctex=false
 
 OPTIND=1
 
-while getopts ":bB:g" opt; do
+while getopts "brspgB:h" opt; do
     case $opt in
         b)
             bibcomp=true
@@ -39,16 +47,10 @@ while getopts ":bB:g" opt; do
             makegloss=true
             ;;
         r)
-            rm -f *.aux
-            rm -f *.toc
-            rm -f *.bbl
-            rm -f *.blg
-            rm -f *.dvi
-            rm -f *.log
-            rm -f *.ps
-            rm -f *.out
-            delated=1
-            echo '\nRubish deleted...\n'
+            deltrash=true
+            ;;
+        s)
+            synctex=true
             ;;
         p)
             latexcomp=pdflatex
@@ -62,7 +64,7 @@ while getopts ":bB:g" opt; do
             echo "Option -$OPTARG requires an argument." >&2
             exit 1
             ;;
-        *)
+        h|*)
             show_help >&2
             exit 1
             ;;
@@ -73,11 +75,23 @@ echo "Compiling $latexfile with $latexcomp"
 #echo $latexfile
 echo
 
+if $deltrash; then
+    rm -f *.aux
+    rm -f *.toc
+    rm -f *.bbl
+    rm -f *.blg
+    rm -f *.dvi
+    rm -f *.log
+    rm -f *.ps
+    rm -f *.out
+    echo -e '\nRubish deleted...\n'
+fi
+
 # LaTeX first run
 $latexcomp $l
 
 ######## Bibliography
-if bibcomp; then
+if $bibcomp; then
     echo
     echo '*****  Running BibTeX  *****'
     bibtex $bibfile
@@ -85,16 +99,25 @@ fi
 
 if $makegloss; then
     echo
-    echo '\n***** Running makeglossaries *****\n'
+    echo -e '\n***** Running makeglossaries *****\n'
     makeglossaries $l
 fi
 
 echo
 echo '*****  Running LaTeX again  *****'
-$latexcomp $l
-if [ "$delated" -eq 1 ]; then
-    echo '*****  Running LaTeX again  *****'
+if $synctex; then
+    $latexcomp -synctex=1 $l
+else
     $latexcomp $l
+fi
+    
+if $deltrash; then
+    echo '*****  Running LaTeX again  *****'
+    if $synctex; then
+        $latexcomp -synctex=1 $l
+    else
+        $latexcomp $l
+    fi
 fi
 
 #### Converting DVI to PDF
