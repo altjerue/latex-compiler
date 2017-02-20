@@ -93,7 +93,7 @@ $latexcomp $l
 ######## Bibliography
 if $bibcomp; then
     echo
-    echo '*****  Running BibTeX  *****'
+    echo -e '\n*****  Running BibTeX  *****\n'
     bibtex $bibfile
 fi
 
@@ -104,7 +104,7 @@ if $makegloss; then
 fi
 
 echo
-echo '*****  Running LaTeX again  *****'
+echo -e '\n*****  Running LaTeX again  *****\n'
 if $synctex; then
     $latexcomp -synctex=1 $l
 else
@@ -112,7 +112,7 @@ else
 fi
     
 if $deltrash; then
-    echo '*****  Running LaTeX again  *****'
+    echo -e '\n*****  Running LaTeX again  *****\n'
     if $synctex; then
         $latexcomp -synctex=1 $l
     else
@@ -125,12 +125,12 @@ if $dvipdfconv; then
 
     # Convert to PostScript
     echo
-    echo '*****  Converting DVI to PS  *****'
+    echo -e '\n*****  Converting DVI to PS  *****\n'
     dvips -Ppdf -z -G0 -j0 $l.dvi -o
 
     # Convert to PDF
     echo
-    echo '*****  Converting PS to PDF  *****'
+    echo -e '\n*****  Converting PS to PDF  *****\n'
     ps2pdf -sPAPERSIZE=a4 $l.ps
 fi
 
