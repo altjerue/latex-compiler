@@ -33,16 +33,16 @@ synctex=false
 
 OPTIND=1
 
-while getopts "brspgB:h" opt; do
+while getopts "brspg:h" opt; do
     case $opt in
         b)
             bibcomp=true
             bibfile=$l
             ;;
-        B)
-            bibcomp=true
-            bibfile=${OPTARG%.*}
-            ;;
+        # B)
+        #     bibcomp=true
+        #     bibfile=${OPTARG%.*}
+        #     ;;
         g)
             makegloss=true
             ;;
@@ -94,7 +94,9 @@ $latexcomp $l
 if $bibcomp; then
     echo
     echo -e '\n*****  Running BibTeX  *****\n'
-    bibtex $bibfile
+    for bfile in *.aux ; do
+        bibtex `basename $bfile .aux`
+    done
 fi
 
 if $makegloss; then
