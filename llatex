@@ -4,7 +4,7 @@
 # Usage info
 show_help() {
 cat << EOF
-Usage: ${0##*/} [-bgprh] [-B BibTeX] [FILE.tex]
+Usage: ${0##*/} [-bmgprh] [FILE.tex]
 
 Run LaTeX for file FILE.tex and generates FILE.pdf
 
@@ -12,9 +12,9 @@ Run LaTeX for file FILE.tex and generates FILE.pdf
   -m   Compiles for multibib
   -g   Run makeglossaries
   -r   Delete .aux, .toc, .dvi, ...
-  -h   Show this message
   -p   Compile with pdfLaTeX
   -s   Use synctex option
+  -h   Show this message
 EOF
  }
 
@@ -34,7 +34,7 @@ multbib=false
 
 OPTIND=1
 
-while getopts "brspg:h" opt; do
+while getopts "bmgrps:h" opt; do
     case $opt in
         b)
             bibcomp=true
@@ -80,8 +80,13 @@ if $deltrash; then
     rm -f *.toc
     rm -f *.bbl
     rm -f *.blg
+    rm -f *.brf
+    rm -f *.fot
     rm -f *.dvi
     rm -f *.log
+    rm -f *.lot
+    rm -f *.lof
+    rm -f *.syntex.gz
     rm -f *.ps
     rm -f *.out
     echo -e '\nRubish deleted...\n'
