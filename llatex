@@ -14,6 +14,7 @@ Run LaTeX for file FILE.tex and generates FILE.pdf
   -r   Delete .aux, .toc, .dvi, ...
   -p   Compile with pdfLaTeX
   -s   Use synctex option
+  -n   Activate nonstop mode
   -h   Show this message
 EOF
  }
@@ -25,16 +26,16 @@ fi
 
 latexfile="${@: -1:1}"
 l=${latexfile%.*}
-latexcomp=latex
+flags=""
+latexcomp="latex"
 dvipdfconv=true
 deltrash=false
 makegloss=false
-synctex=false
 multbib=false
 
 OPTIND=1
 
-while getopts "bmgrps:h" opt; do
+while getopts "bmgrpnsh" opt; do
     case $opt in
         b)
             bibcomp=true
@@ -43,6 +44,9 @@ while getopts "bmgrps:h" opt; do
         m)
              multbib=true
              ;;
+        n)
+            flags=$flags" -interaction=nonstopmode"
+            ;;
         g)
             makegloss=true
             ;;
@@ -50,7 +54,7 @@ while getopts "bmgrps:h" opt; do
             deltrash=true
             ;;
         s)
-            synctex=true
+            flags=$flags" -synctex=1"
             ;;
         p)
             latexcomp=pdflatex
@@ -72,7 +76,7 @@ while getopts "bmgrps:h" opt; do
 done
 
 echo "Compiling $latexfile with $latexcomp"
-#echo $latexfile
+echo "Using flags: $flags"
 echo
 
 if $deltrash; then
@@ -93,7 +97,7 @@ if $deltrash; then
 fi
 
 # LaTeX first run
-$latexcomp $l
+$latexcomp $flags $l
 
 ######## Bibliography
 if $bibcomp; then
@@ -116,19 +120,12 @@ fi
 
 echo
 echo -e '\n*****  Running LaTeX again  *****\n'
-if $synctex; then
-    $latexcomp -synctex=1 $l
-else
-    $latexcomp $l
-fi
+$latexcomp $flags $l
+
     
 if $deltrash; then
     echo -e '\n*****  Running LaTeX again  *****\n'
-    if $synctex; then
-        $latexcomp -synctex=1 $l
-    else
-        $latexcomp $l
-    fi
+    $latexcomp $flags $l
 fi
 
 #### Converting DVI to PDF
