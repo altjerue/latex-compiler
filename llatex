@@ -4,7 +4,7 @@
 # Usage info
 show_help() {
 cat << EOF
-Usage: ${0##*/} [-bgprh] [-B BibTeX] [FILE.tex]
+Usage: ${0##*/} [-bmgrhps] [-B BibTeX] [FILE.tex]
 
 Run LaTeX for file FILE.tex and generates FILE.pdf
 
@@ -34,14 +34,15 @@ multbib=false
 
 OPTIND=1
 
-while getopts "brspg:h" opt; do
+while getopts "bmrspg:h" opt; do
     case $opt in
         b)
             bibcomp=true
-            bibfile=$l
+            #bibfile=$l
             ;;
         m)
-             multbib=true
+            bibcomp=true
+            multbib=true
              ;;
         g)
             makegloss=true
@@ -99,7 +100,7 @@ if $bibcomp; then
             bibtex `basename $bfile .aux`
         done
     else
-        bibtex $bibfile
+        bibtex $l
     fi
 fi
 
@@ -117,18 +118,17 @@ else
     $latexcomp $l
 fi
     
-if $deltrash; then
-    echo -e '\n*****  Running LaTeX again  *****\n'
-    if $synctex; then
-        $latexcomp -synctex=1 $l
-    else
-        $latexcomp $l
-    fi
+# if $deltrash; then
+#     echo -e '\n*****  Running LaTeX again  *****\n'
+if $synctex; then
+    $latexcomp -synctex=1 $l
+else
+    $latexcomp $l
 fi
+# fi
 
 #### Converting DVI to PDF
 if $dvipdfconv; then
-
     # Convert to PostScript
     echo
     echo -e '\n*****  Converting DVI to PS  *****\n'
@@ -137,7 +137,7 @@ if $dvipdfconv; then
     # Convert to PDF
     echo
     echo -e '\n*****  Converting PS to PDF  *****\n'
-    ps2pdf -sPAPERSIZE=a4 $l.ps
+    ps2pdf $l.ps
 fi
 
 # Deleting log,aux,dvi,out,snm,nav,toc
