@@ -142,6 +142,6 @@ if $dvipdfconv; then
     # Convert to PDF
     echo
     echo -e '\n*****  Converting PS to PDF  *****\n'
-    ps2pdf $l.ps
+    ps2pdf -dAutoRotatePages=/None $l.ps
 fi
 
