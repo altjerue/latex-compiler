@@ -32,6 +32,7 @@ dvipdfconv=true
 deltrash=false
 makegloss=false
 multbib=false
+bibcomp=false
 
 OPTIND=1
 
@@ -81,19 +82,20 @@ echo "Using flags: $flags"
 echo
 
 if $deltrash; then
-    rm -f *.aux
-    rm -f *.toc
-    rm -f *.bbl
-    rm -f *.blg
-    rm -f *.brf
-    rm -f *.fot
-    rm -f *.dvi
-    rm -f *.log
-    rm -f *.lot
-    rm -f *.lof
-    rm -f *.syntex.gz
-    rm -f *.ps
-    rm -f *.out
+    rm -f $l.aux
+    rm -f $l.toc
+    rm -f $l.bbl
+    rm -f $l.blg
+    rm -f $l.brf
+    rm -f $l.fot
+    rm -f $l.dvi
+    rm -f $l.log
+    rm -f $l.lot
+    rm -f $l.lof
+    rm -f $l.syntex.gz
+    rm -f $l.ps
+    rm -f $l.out
+    rm -f $l.pdf
     echo -e '\nRubish deleted...\n'
 fi
 
@@ -143,11 +145,3 @@ if $dvipdfconv; then
     ps2pdf $l.ps
 fi
 
-# Deleting log,aux,dvi,out,snm,nav,toc
-# rm *.log
-# rm *.aux
-# rm *.dvi
-#
-# rm *.snm
-# rm *.nav
-# rm *.toc
