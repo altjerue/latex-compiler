@@ -135,13 +135,16 @@ fi
 #### Converting DVI to PDF
 if $dvipdfconv; then
     # Convert to PostScript
-    echo
-    echo -e '\n*****  Converting DVI to PS  *****\n'
-    dvips -Ppdf -z -G0 -j0 $l.dvi -o
+    # echo
+    # echo -e '\n*****  Converting DVI to PS  *****\n'
+    # dvips -Ppdf -z -G0 -j0 $l.dvi -o
 
     # Convert to PDF
+    # echo
+    # echo -e '\n*****  Converting PS to PDF  *****\n'
+    # ps2pdf $l.ps #-dAutoRotatePages=/None $l.ps
     echo
-    echo -e '\n*****  Converting PS to PDF  *****\n'
-    ps2pdf -dAutoRotatePages=/None $l.ps
+    echo -e '\n*****  Converting DVI to PDF  *****\n'
+    dvipdf -dAutoRotatePages=/None $l.dvi
 fi
 
